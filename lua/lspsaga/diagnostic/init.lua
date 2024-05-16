@@ -62,14 +62,6 @@ function diag:get_diagnostic(opt)
   return vim.diagnostic.get()
 end
 
-local function clean_msg(msg)
-  local pattern = '%(.+%)%S$'
-  if msg:find(pattern) then
-    return msg:gsub(pattern, '')
-  end
-  return msg
-end
-
 function diag:code_action_cb(action_tuples, enriched_ctx)
   if not self.bufnr or not api.nvim_buf_is_loaded(self.bufnr) then
     return
@@ -87,8 +79,7 @@ function diag:code_action_cb(action_tuples, enriched_ctx)
       return
     end
     if client_with_actions[2].title then
-      local title = clean_msg(client_with_actions[2].title)
-      local action_title = '[[' .. index .. ']] ' .. title
+      local action_title = '**' .. index .. '** ' .. client_with_actions[2].title
       contents[#contents + 1] = action_title
     end
   end
@@ -291,14 +282,12 @@ function diag:render_diagnostic_window(entry, option)
     virt[#virt + 1] = { ' ' .. entry.code, 'Comment' }
   end
 
-  local max_width = math.floor(vim.o.columns * diag_conf.max_width)
+  local max_width = math.floor(vim.o.columns * 0.8)
   local max_len = util.get_max_content_length(content)
     + (entry.source and #entry.source or 0)
     + (entry.code and #tostring(entry.code) or 0)
     + 2
-
-  local increase = util.win_height_increase(content, diag_conf.max_width)
-
+  local increase = util.win_height_increase(content, 0.8)
   local float_opt = {
     relative = 'cursor',
     width = math.min(max_width, max_len),
