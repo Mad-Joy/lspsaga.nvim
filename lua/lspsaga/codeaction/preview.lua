@@ -4,17 +4,12 @@ local win = require('lspsaga.window')
 local util = require('lspsaga.util')
 
 local function get_action_diff(main_buf, tuple)
-  if not tuple then
+  if not tuple or not tuple[2] then
     return
   end
-  local act = require('lspsaga.codeaction')
-  local action = tuple[2]
-  if not action then
-    return
-  end
-
-  local id = tuple[1]
+  local id, action = unpack(tuple)
   local client = lsp.get_client_by_id(id)
+  local act = require('lspsaga.codeaction')
   if not action.edit and client and act:support_resolve(client) then
     action = act:get_resolve_action(client, action, main_buf)
     if not action then
@@ -22,7 +17,6 @@ local function get_action_diff(main_buf, tuple)
     end
     tuple[2] = action
   end
-
   if not action.edit then
     return
   end
@@ -140,12 +134,6 @@ local function create_preview_win(content, main_winid)
       opt.height = math.min(valid_top_height, #content)
     end
   end
-
-  if config.ui.title then
-    opt.title = { { 'Action Preview', 'ActionPreviewTitle' } }
-    opt.title_pos = 'center'
-  end
-
   preview_buf, preview_winid = win
     :new_float(opt, false, true)
     :setlines(content)
