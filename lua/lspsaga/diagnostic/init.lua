@@ -113,9 +113,11 @@ function diag:code_action_cb(action_tuples, enriched_ctx, win_conf)
     end
     self.number_count = #action_tuples
   end
-  api.nvim_win_set_cursor(self.float_winid, { start_line + 1, 0 })
-  api.nvim_buf_add_highlight(self.float_bufnr, ns, 'SagaSelect', start_line, 6, -1)
-  action_preview(self.float_winid, curbuf, action_tuples[1])
+  if diag_conf.auto_preview then
+    api.nvim_win_set_cursor(self.float_winid, { start_line + 1, 0 })
+    api.nvim_buf_add_highlight(self.float_bufnr, ns, 'SagaSelect', start_line, 6, -1)
+    action_preview(self.float_winid, curbuf, action_tuples[1])
+  end
   api.nvim_create_autocmd('CursorMoved', {
     buffer = self.float_bufnr,
     callback = function()
@@ -256,6 +258,13 @@ function diag:goto_pos(pos, opts)
   (is_forward and vim.diagnostic.goto_next or vim.diagnostic.goto_prev)(vim.tbl_extend('keep', {
     float = {
       border = config.ui.border,
+      format = function(diagnostic)
+        if not vim.bo[api.nvim_get_current_buf()].filetype == 'rust' then
+          return diagnostic.message
+        end
+        return diagnostic.message:find('\n`') and diagnostic.message:gsub('\n`', '`')
+          or diagnostic.message
+      end,
       header = '',
       prefix = { '• ', 'Title' },
     },
