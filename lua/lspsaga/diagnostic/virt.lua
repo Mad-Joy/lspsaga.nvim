@@ -20,10 +20,10 @@ local function changed(bufnr)
       local curline = vim.api.nvim_win_get_cursor(0)[1]
       local diagnostics = vim.diagnostic.get(args.buf, { lnum = curline - 1 })
       local virt_texts = { { (' '):rep(4) } }
-      for _, diag in ipairs(diagnostics) do
-        virt_texts[#virt_texts + 1] =
-          { diag.message, 'Diagnostic' .. vim.diagnostic.severity[diag.severity] }
-      end
+      -- for _, diag in ipairs(diagnostics) do <madjoy> Hides inline virtual text diagnostics for better integration with lsp_lines
+      --   virt_texts[#virt_texts + 1] =
+      --     { diag.message, 'Diagnostic' .. vim.diagnostic.severity[diag.severity] }
+      -- end </madjoy>
       api.nvim_buf_set_extmark(args.buf, ns, curline - 1, 0, {
         virt_text = virt_texts,
         hl_mode = 'combine',
